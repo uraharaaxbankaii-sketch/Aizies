@@ -1,1 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>Aizies — AI Nutrition Tracker</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #08080d;
+      color: white;
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 7%;
+      border-bottom: 1px solid #22222d;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 800;
+      color: #9b6cff;
+    }
+
+    .container {
+      width: 86%;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .hero {
+      padding: 55px 0 30px;
+    }
+
+    .hero h1 {
+      font-size: clamp(38px, 7vw, 70px);
+      line-height: 1;
+      margin-bottom: 15px;
+    }
+
+    .hero span {
+      color: #9b6cff;
+    }
+
+    .hero p {
+      color: #a5a5b3;
+      font-size: 17px;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+
+    .scan-btn {
+      margin-top: 25px;
+      background: #9b6cff;
+      color: white;
+      border: none;
+      padding: 15px 24px;
+      border-radius: 13px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .scan-btn:hover {
+      transform: translateY(-2px);
+      background: #8350f4;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin: 30px 0;
+    }
+
+    .card {
+      background: #111119;
+      border: 1px solid #242432;
+      border-radius: 17px;
+      padding: 22px;
+    }
+
+    .card p {
+      color: #9999a8;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .value {
+      font-size: 29px;
+      font-weight: 800;
+    }
+
+    .unit {
+      color: #888895;
+      font-size: 13px;
+      margin-left: 4px;
+    }
+
+    .section-title {
+      margin: 35px 0 15px;
+      font-size: 23px;
+    }
+
+    .macros {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+
+    .macro {
+      background: #111119;
+      border: 1px solid #242432;
+      padding: 20px;
+      border-radius: 16px;
+    }
+
+    .macro h3 {
+      margin-bottom: 8px;
+    }
+
+    .macro p {
+      color: #9999a8;
+    }
+
+    .meal-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 50px;
+    }
+
+    .meal {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #111119;
+      border: 1px solid #242432;
+      padding: 18px;
+      border-radius: 15px;
+    }
+
+    .meal-name {
+      font-weight: bold;
+      font-size: 17px;
+    }
+
+    .meal-details {
+      color: #9999a8;
+      margin-top: 5px;
+      font-size: 13px;
+    }
+
+    .meal-calories {
+      font-weight: bold;
+      color: #9b6cff;
+    }
+
+    .empty {
+      color: #777784;
+      background: #111119;
+      border: 1px dashed #333342;
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+    }
+
+    /* MODAL */
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 500px;
+      background: #111119;
+      border: 1px solid #292938;
+      border-radius: 20px;
+      padding: 25px;
+    }
+
+    .modal-box h2 {
+      margin-bottom: 8px;
+    }
+
+    .modal-box > p {
+      color: #9999a8;
+      margin-bottom: 20px;
+    }
+
+    .file-input {
+      width: 100%;
+      padding: 15px;
+      border: 1px dashed #444452;
+      border-radius: 12px;
+      color: #aaa;
+      background: #0b0b11;
+      margin-bottom: 15px;
+    }
+
+    .analyze-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #9b6cff;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid #333342;
+      color: #aaa;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px 0;
+      color: #aaa;
+    }
+
+    .result {
+      display: none;
+      margin-top: 20px;
+      background: #0b0b11;
+      border: 1px solid #292938;
+      padding: 18px;
+      border-radius: 15px;
+    }
+
+    .result h3 {
+      font-size: 21px;
+      margin-bottom: 5px;
+    }
+
+    .portion {
+      color: #9999a8;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    .nutrition-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .nutrition {
+      background: #15151f;
+      padding: 13px;
+      border-radius: 10px;
+    }
+
+    .nutrition span {
+      display: block;
+      color: #888895;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .nutrition strong {
+      font-size: 18px;
+    }
+
+    .add-meal {
+      width: 100%;
+      margin-top: 15px;
+      padding: 13px;
+      border: none;
+      border-radius: 11px;
+      background: #20c997;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .error {
+      display: none;
+      background: #3b1518;
+      color: #ff9a9a;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 750px) {
+      .dashboard {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .macros {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 40px;
+      }
+    }
+
+    @media (max-width: 450px) {
+      .dashboard {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .meal {
+        gap: 10px;
+      }
+
+      .meal-calories {
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">Aizies</div>
+</header>
+
+<main class="container">
+
+  <section class="hero">
+    <h1>Eat smart.<br><span>Track better.</span></h1>
+
+    <p>
+      Aizies uses AI to analyze your food photos and estimate
+      calories, protein, carbohydrates and fats.
+    </p>
+
+    <button class="scan-btn" onclick="openScanner()">
+      📸 Scan Your Food
+    </button>
+  </section>
+
+  <h2 class="section-title">Today's Nutrition</h2>
+
+  <section class="dashboard">
+
+    <div class="card">
+      <p>Calories</p>
+      <div class="value" id="calories">0</div>
+      <span class="unit">kcal</span>
+    </div>
+
+    <div class="card">
+      <p>Protein</p>
+      <div class="value" id="protein">0</div>
+      <span class="unit">g</span>
+    </div>
+
+    <div class="card">
+      <p>Carbs</p>
+      <div class="value" id="carbs">0</div>
+      <span class="unit">g</span>
+    </div>
+
+    <div class="card">
+      <p>Meals</p>
+      <div class="value" id="meals">0</div>
+    </div>
+
+  </section>
+
+  <h2 class="section-title">Macros</h2>
+
+  <section class="macros">
+
+    <div class="macro">
+      <h3>Protein</h3>
+      <p id="macroProtein">0 g</p>
+    </div>
+
+    <div class="macro">
+      <h3>Carbohydrates</h3>
+      <p id="macroCarbs">0 g</p>
+    </div>
+
+    <div class="macro">
+      <h3>Fat</h3>
+      <p id="macroFat">0 g</p>
+    </div>
+
+  </section>
+
+  <h2 class="section-title">Meal History</h2>
+
+  <section id="mealList" class="meal-list"></section>
+
+</main>
+
+
+<!-- SCANNER MODAL -->
+
+<div class="modal" id="scannerModal">
+
+  <div class="modal-box">
+
+    <h2>📸 Scan Your Food</h2>
+
+    <p>
+      Upload a clear photo of your meal and Aizies will estimate
+      its nutrition.
+    </p>
+
+    <input
+      class="file-input"
+      id="foodImage"
+      type="file"
+      accept="image/*"
+      capture="environment"
+    >
+
+    <button class="analyze-btn" onclick="analyzeFood()">
+      Analyze Food
+    </button>
+
+    <div class="loading" id="loading">
+      🤖 AI is analyzing your food...
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="result" id="result">
+
+      <h3 id="foodName">Food</h3>
+
+      <div class="portion" id="portion">
+        Estimated portion
+      </div>
+
+      <div class="nutrition-grid">
+
+        <div class="nutrition">
+          <span>Calories</span>
+          <strong id="resultCalories">0 kcal</strong>
+        </div>
+
+        <div class="nutrition">
+          <span>Protein</span>
+          <strong id="resultProtein">0 g</strong>
+        </div>
+
+        <div class="nutrition">
+          <span>Carbs</span>
+          <strong id="resultCarbs">0 g</strong>
+        </div>
+
+        <div class="nutrition">
+          <span>Fat</span>
+          <strong id="resultFat">0 g</strong>
+        </div>
+
+      </div>
+
+      <button class="add-meal" onclick="addMeal()">
+        + Add To Today's Meals
+      </button>
+
+    </div>
+
+    <button class="close-btn" onclick="closeScanner()">
+      Close
+    </button>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  /*
+    IMPORTANT:
+    Replace this with your deployed backend URL.
+
+    Example:
+    https://aizies-backend.onrender.com
+  */
+
+  const BACKEND_URL = "https://YOUR-BACKEND-DOMAIN";
+
+
+  let currentResult = null;
+
+
+  // -----------------------------
+  // STORAGE
+  // -----------------------------
+
+  function getMeals() {
+    return JSON.parse(localStorage.getItem("aiziesMeals") || "[]");
+  }
+
+
+  function saveMeals(meals) {
+    localStorage.setItem("aiziesMeals", JSON.stringify(meals));
+  }
+
+
+  // -----------------------------
+  // SCANNER
+  // -----------------------------
+
+  function openScanner() {
+
+    document.getElementById("scannerModal").style.display = "flex";
+
+    document.getElementById("result").style.display = "none";
+
+    document.getElementById("error").style.display = "none";
+
+    document.getElementById("loading").style.display = "none";
+
+  }
+
+
+  function closeScanner() {
+
+    document.getElementById("scannerModal").style.display = "none";
+
+  }
+
+
+  // -----------------------------
+  // AI FOOD ANALYSIS
+  // -----------------------------
+
+  async function analyzeFood() {
+
+    const input = document.getElementById("foodImage");
+
+    const file = input.files[0];
+
+    const loading = document.getElementById("loading");
+
+    const error = document.getElementById("error");
+
+    const result = document.getElementById("result");
+
+
+    error.style.display = "none";
+    result.style.display = "none";
+
+
+    if (!file) {
+
+      error.textContent = "Please select or take a food photo first.";
+
+      error.style.display = "block";
+
+      return;
+
+    }
+
+
+    loading.style.display = "block";
+
+
+    try {
+
+      const formData = new FormData();
+
+      formData.append("image", file);
+
+
+      const response = await fetch(
+        `${BACKEND_URL}/analyze-food`,
+        {
+          method: "POST",
+          body: formData
+        }
+      );
+
+
+      const data = await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.error || "Food analysis failed."
+        );
+
+      }
+
+
+      currentResult = {
+
+        food: data.food,
+
+        portion: data.portion,
+
+        calories: Number(data.calories) || 0,
+
+        protein: Number(data.protein) || 0,
+
+        carbs: Number(data.carbs) || 0,
+
+        fat: Number(data.fat) || 0
+
+      };
+
+
+      document.getElementById("foodName").textContent =
+        currentResult.food;
+
+
+      document.getElementById("portion").textContent =
+        currentResult.portion;
+
+
+      document.getElementById("resultCalories").textContent =
+        `${currentResult.calories} kcal`;
+
+
+      document.getElementById("resultProtein").textContent =
+        `${currentResult.protein} g`;
+
+
+      document.getElementById("resultCarbs").textContent =
+        `${currentResult.carbs} g`;
+
+
+      document.getElementById("resultFat").textContent =
+        `${currentResult.fat} g`;
+
+
+      result.style.display = "block";
+
+    }
+
+    catch (err) {
+
+      console.error(err);
+
+      error.textContent =
+        err.message ||
+        "Something went wrong while analyzing the food.";
+
+      error.style.display = "block";
+
+    }
+
+    finally {
+
+      loading.style.display = "none";
+
+    }
+
+  }
+
+
+  // -----------------------------
+  // ADD MEAL
+  // -----------------------------
+
+  function addMeal() {
+
+    if (!currentResult) {
+      return;
+    }
+
+
+    const meals = getMeals();
+
+
+    meals.push({
+
+      id: Date.now(),
+
+      food: currentResult.food,
+
+      portion: currentResult.portion,
+
+      calories: currentResult.calories,
+
+      protein: currentResult.protein,
+
+      carbs: currentResult.carbs,
+
+      fat: currentResult.fat,
+
+      date: new Date().toISOString()
+
+    });
+
+
+    saveMeals(meals);
+
+
+    updateDashboard();
+
+
+    document.getElementById("result").style.display = "none";
+
+
+    document.getElementById("foodImage").value = "";
+
+
+    currentResult = null;
+
+
+    alert("Meal added to today's nutrition!");
+
+  }
+
+
+  // -----------------------------
+  // DASHBOARD
+  // -----------------------------
+
+  function updateDashboard() {
+
+    const meals = getMeals();
+
+
+    let calories = 0;
+
+    let protein = 0;
+
+    let carbs = 0;
+
+    let fat = 0;
+
+
+    meals.forEach(meal => {
+
+      calories += Number(meal.calories) || 0;
+
+      protein += Number(meal.protein) || 0;
+
+      carbs += Number(meal.carbs) || 0;
+
+      fat += Number(meal.fat) || 0;
+
+    });
+
+
+    document.getElementById("calories").textContent =
+      Math.round(calories);
+
+
+    document.getElementById("protein").textContent =
+      Math.round(protein);
+
+
+    document.getElementById("carbs").textContent =
+      Math.round(carbs);
+
+
+    document.getElementById("meals").textContent =
+      meals.length;
+
+
+    document.getElementById("macroProtein").textContent =
+      `${Math.round(protein)} g`;
+
+
+    document.getElementById("macroCarbs").textContent =
+      `${Math.round(carbs)} g`;
+
+
+    document.getElementById("macroFat").textContent =
+      `${Math.round(fat)} g`;
+
+
+    renderMeals();
+
+  }
+
+
+  // -----------------------------
+  // MEAL HISTORY
+  // -----------------------------
+
+  function renderMeals() {
+
+    const container =
+      document.getElementById("mealList");
+
+
+    const meals = getMeals();
+
+
+    if (meals.length === 0) {
+
+      container.innerHTML =
+        `<div class="empty">
+          No meals scanned yet.
+        </div>`;
+
+      return;
+
+    }
+
+
+    container.innerHTML = meals
+      .slice()
+      .reverse()
+      .map(meal => `
+
+        <div class="meal">
+
+          <div>
+
+            <div class="meal-name">
+              ${escapeHTML(meal.food)}
+            </div>
+
+            <div class="meal-details">
+              ${escapeHTML(meal.portion)}
+              • Protein ${meal.protein}g
+              • Carbs ${meal.carbs}g
+              • Fat ${meal.fat}g
+            </div>
+
+          </div>
+
+          <div class="meal-calories">
+            ${meal.calories} kcal
+          </div>
+
+        </div>
+
+      `)
+      .join("");
+
+  }
+
+
+  // -----------------------------
+  // SECURITY
+  // -----------------------------
+
+  function escapeHTML(value) {
+
+    return String(value)
+
+      .replace(/&/g, "&amp;")
+
+      .replace(/</g, "&lt;")
+
+      .replace(/>/g, "&gt;")
+
+      .replace(/"/g, "&quot;")
+
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  // -----------------------------
+  // START
+  // -----------------------------
+
+  updateDashboard();
+
+</script>
+
+</body>
+</html>
